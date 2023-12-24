@@ -27,7 +27,7 @@ namespace SCI_Server
 			"database delete profile",
 			"database login profile",
 
-			 "database get profile",
+			"database get profile",
 
 		};
 		public static string ProcessCommand(string rawCommand)

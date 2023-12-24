@@ -292,6 +292,8 @@ namespace SCI_Server
 				SQLiteDataReader reader = sqlCommand.ExecuteReader();
 				while (reader.Read())
 				{
+					// id
+					result += reader.GetInt32(0).ToString() + Environment.NewLine;
 					// username
 					result += reader.GetString(1) + Environment.NewLine;
 					// password
