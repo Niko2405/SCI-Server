@@ -107,7 +107,8 @@ namespace SCI_Server
 					Data = Data.Replace("<EOF>", "");
 					Logging.Info($"Received: {Data}");
 
-					string response = NetworkCommands.ProcessCommand(Data);
+					//string response = NetworkCommands.ProcessCommand(Data);
+					string response = Netcode.ProcessCommand(Data);
 					Logging.Info($"Response: {response}");
 
 					//Logging.Debug("End of data");

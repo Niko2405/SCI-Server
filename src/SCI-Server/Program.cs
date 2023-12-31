@@ -9,24 +9,23 @@ namespace SCI_Server
 			//Console.WriteLine(NetworkManager.Version.GetVersion);
 			foreach (string arg in args)
 			{
-				if (arg == "--client")
-				{
-					ClientSocket client = new("127.0.0.1", 8080);
-					while (true)
-					{
-						Console.Write(">");
-						string cmd = Console.ReadLine();
-						Logging.Info(client.SendData(cmd));
-					}
-					
-				}
+				
 			}
 			Init.CreateFilesystem();
+			Logging.IsDebugEnabled = true;
 			DatabaseManager.CheckIntegrity();
 
 			ServerSocket server = new("0.0.0.0", 8080);
-			Thread serverThread = new Thread(server.StartListener);
+			Thread serverThread = new(server.StartListener);
 			serverThread.Start();
+
+			Thread.Sleep(1000);
+			while (true)
+			{
+				Console.Write("Local Command>");
+				string cmd = Console.ReadLine();
+				Netcode.ProcessCommand(cmd);
+			}
 		}
 	}
 }

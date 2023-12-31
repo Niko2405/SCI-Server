@@ -22,33 +22,38 @@ namespace SCI_Server
 		/// </summary>
 		public static void CheckIntegrity()
 		{
+			Logging.PrintHeader($"DATABASE INIT [{DB_USERS}]");
 			// check users.db
 			if (!System.IO.File.Exists(Data.DIR_DATABASE + DB_USERS))
 			{
 				Logging.Info($"Create new database: {DB_USERS}...");
-				SQLiteConnection connection = new SQLiteConnection($"Data Source={Data.DIR_DATABASE + DB_USERS}; Version = 3; New = True;");
+				SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_USERS}; Version = 3; New = True;");
 				try
 				{
 					connection.Open();
 					var sqlCommand = connection.CreateCommand();
 					Logging.Info("Creating profile table...");
-					sqlCommand.CommandText = @"
-						CREATE TABLE profiles (
-							id			INTEGER		PRIMARY KEY ON CONFLICT ROLLBACK AUTOINCREMENT,
-							username	TEXT		NOT NULL UNIQUE ON CONFLICT FAIL,
-							password	TEXT		NOT NULL,
-							permission	TEXT		NOT NULL,
-							birthday	TEXT		NOT NULL,
-							country		TEXT		NOT NULL,
-							state		TEXT		NOT NULL,
-							age			INTEGER		NOT NULL,
-							locked		INTEGER		NOT NULL DEFAULT (0)
+					sqlCommand.CommandText =
+						@"
+							CREATE TABLE profiles (
+								id			INTEGER		PRIMARY KEY ON CONFLICT ROLLBACK AUTOINCREMENT,
+								username	TEXT		NOT NULL UNIQUE ON CONFLICT FAIL,
+								firstname	TEXT		NOT NULL,
+								lastname	TEXT		NOT NULL,
+								password	TEXT		NOT NULL,
+								permission	TEXT		NOT NULL,
+								birthday	TEXT		NOT NULL,
+								country		TEXT		NOT NULL,
+								state		TEXT		NOT NULL,
+								city		TEXT		NOT NULL,
+								age			INTEGER		NOT NULL,
+								userlocked	INTEGER		NOT NULL DEFAULT (0)
 						);
 					";
 					sqlCommand.ExecuteNonQuery();
 
 					Logging.Info("Creating default root profile...");
-					sqlCommand.CommandText = $"INSERT INTO profiles (username, password, permission, birthday, country, state, age, locked) VALUES('{DEFAULT_USERNAME}', '{DEFAULT_PASSWORD}', 'root', '01.01.1998', 'Germany', 'Hessen', 0, 0)";
+					sqlCommand.CommandText = $"INSERT INTO profiles (username, firstname, lastname, password, permission, birthday, country, state, city, age, userlocked) VALUES('{DEFAULT_USERNAME}', 'Max', 'Mustermann','{DEFAULT_PASSWORD}', 'root', '01.01.1998', 'Germany', 'Hessen', 'Frankfurt', 0, 0)";
 					sqlCommand.ExecuteNonQuery();
 					connection.Close();
 				}
@@ -57,23 +62,49 @@ namespace SCI_Server
 					Logging.Error(ex.Message);
 				}
 			}
+			Logging.Info("OK");
 
+			Logging.PrintHeader($"DATABASE INIT [{DB_SYSTEM}]");
 			// Check system.db
 			if (!System.IO.File.Exists(Data.DIR_DATABASE + DB_SYSTEM))
 			{
-				Logging.Info($"Create new database: {DB_SYSTEM}...");
-				SQLiteConnection connection = new SQLiteConnection($"Data Source={Data.DIR_DATABASE + DB_SYSTEM}; Version = 3; New = True;");
-				connection.Open();
-				// create tables
-				connection.Close();
+				try
+				{
+					Logging.Info($"Create new database: {DB_SYSTEM}...");
+					SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_SYSTEM}; Version = 3; New = True;");
+					connection.Open();
+					// create tables
+					var sqlCommand = connection.CreateCommand();
+					Logging.Info("Creating keys table...");
+					sqlCommand.CommandText =
+						@"
+						CREATE TABLE keys (
+							id				INTEGER		PRIMARY KEY ON CONFLICT ROLLBACK AUTOINCREMENT,
+							accesscode		INTEGER		NOT NULL UNIQUE ON CONFLICT FAIL,
+							secruitykey		INTEGER		NOT NULL UNIQUE ON CONFLICT FAIL
+						);
+					";
+					sqlCommand.ExecuteNonQuery();
+
+					Logging.Info("Creating default keys...");
+					sqlCommand.CommandText = $"INSERT INTO keys (accesscode, secruitykey) VALUES(10, 20)";
+					sqlCommand.ExecuteNonQuery();
+					connection.Close();
+				}
+				catch (Exception ex)
+				{
+					Logging.Error(ex.Message);
+				}
 			}
+			Logging.Info("OK");
 
 			// TEST DATABASE USERS
+			Logging.PrintHeader($"DATABASE INTEGRITY TEST");
 			#region integrity_checks
 			Logging.Info($"Database: {Data.DIR_DATABASE + DB_USERS} detected. Check integrity...");
 			try
 			{
-				SQLiteConnection connection = new SQLiteConnection($"Data Source={Data.DIR_DATABASE + DB_SYSTEM};");
+				SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_SYSTEM};");
 				connection.Open();
 				var sqlCommand = connection.CreateCommand();
 
@@ -85,8 +116,9 @@ namespace SCI_Server
 			{
 				Logging.Error(ex.Message);
 			}
+			Logging.Info("OK");
 
-			// TEST DATABASE USERS
+			// TEST DATABASE SYSTEM
 			Logging.Info($"Database: {Data.DIR_DATABASE + DB_SYSTEM} detected. Check integrity...");
 			try
 			{
@@ -102,6 +134,7 @@ namespace SCI_Server
 			{
 				Logging.Error(ex.Message);
 			}
+			Logging.Info("OK");
 			#endregion
 		}
 
@@ -119,7 +152,7 @@ namespace SCI_Server
 			{
 				connection.Open();
 				var sqlCommand = connection.CreateCommand();
-				sqlCommand.CommandText = $"INSERT INTO profiles (username, password, permission, birthday, country, state, age, locked) VALUES ('{username}', '{password}', '{permission}', '01.01.1998', 'Germany', 'Hessen', 20, 0);";
+				sqlCommand.CommandText = $"INSERT INTO profiles (username, firstname, lastname, password, permission, birthday, country, state, city, age, locked) VALUES ('{username}', 'new firstname', 'new lastname', '{password}', '{permission}', '01.01.1998', 'Germany', 'Hessen', 'Frankfurt', 20, 0);";
 				sqlCommand.ExecuteNonQuery();
 				return true;
 			}
@@ -211,7 +244,7 @@ namespace SCI_Server
 		/// <returns>true if operation success, false if failed</returns>
 		public static bool UpdateUserPermission(string targetUsername, string newPermission)
 		{
-			SQLiteConnection connection = new SQLiteConnection($"Data Source={Data.DIR_DATABASE + DB_USERS};");
+			SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_USERS};");
 			try
 			{
 				connection.Open();
@@ -281,36 +314,23 @@ namespace SCI_Server
 		public static string GetUserProfile(string targetUsername)
 		{
 			string result = string.Empty;
-			string[] response = Array.Empty<string>();
+			string[] response = [];
 
-			SQLiteConnection connection = new SQLiteConnection($"Data Source={Data.DIR_DATABASE + DB_USERS};");
+			SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_USERS};");
 			try
 			{
 				connection.Open();
 				var sqlCommand = connection.CreateCommand();
 				sqlCommand.CommandText = $"SELECT * FROM profiles WHERE profiles.username = '{targetUsername}'";
 				SQLiteDataReader reader = sqlCommand.ExecuteReader();
-				while (reader.Read())
+				reader.Read();
+				object[] data = new object[12];
+				int quant = reader.GetValues(data);
+				for (int i = 0; i < quant; i++)
 				{
-					// id
-					result += reader.GetInt32(0).ToString() + Environment.NewLine;
-					// username
-					result += reader.GetString(1) + Environment.NewLine;
-					// password
-					result += reader.GetString(2) + Environment.NewLine;
-					// permission
-					result += reader.GetString(3) + Environment.NewLine;
-					// birthday
-					result += reader.GetString(4) + Environment.NewLine;
-					// country
-					result += reader.GetString(5) + Environment.NewLine;
-					// state
-					result += reader.GetString(6) + Environment.NewLine;
-					// age
-					result += reader.GetInt32(7).ToString() + Environment.NewLine;
-					// locked
-					result += reader.GetInt32(8).ToString();
+					result += data[i] + "\n";
 				}
+				reader.Close();
 				//response = dbUsername + Environment.NewLine + dbPassword + Environment.NewLine + dbPermission + Environment.NewLine + dbBirthday + Environment.NewLine + dbCountry + Environment.NewLine + dbState + Environment.NewLine + dbAge + Environment.NewLine + dbLocked;
 				//Log.Debug($"Userprofile:\ndbUsername:\t{dbUsername}\ndbPassword:\t{dbPassword}\ndbPermission:\t{dbPermission}\ndbBirthday:\t{dbBirthday}\ndbCountry:\t{dbCountry}\ndbState:\t{dbState}\ndbAge:\t{dbAge}\ndbLocked:\t{dbLocked}");
 				return result;
@@ -322,18 +342,24 @@ namespace SCI_Server
 				return result;
 			}
 		}
+
 		/// <summary>
-		/// Check if login is valid
+		/// Check if the login is valid. Username and password have to match. AccessCode and Secruity have to also match in the tabel
 		/// </summary>
-		/// <param name="username">Username</param>
-		/// <param name="password">Password</param>
-		/// <returns>true if valid and false for invalid</returns>
-		public static bool IsLoginValid(string username, string password)
+		/// <param name="username"></param>
+		/// <param name="password"></param>
+		/// <param name="accesscode"></param>
+		/// <param name="secruitykey"></param>
+		/// <returns>True if login is valid, False when is invalid</returns>
+		public static bool IsLoginValid(string username, string password, int accesscode, int secruitykey)
 		{
 			string dbUsername = string.Empty;
 			string dbPassword = string.Empty;
 
-			SQLiteConnection connection = new SQLiteConnection($"Data Source={Data.DIR_DATABASE + DB_USERS};");
+			int dbAccessCode = GetAccessCode(secruitykey);
+			int dbSecruityKey = GetSecruityKey(accesscode);
+			
+			SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_USERS};");
 			try
 			{
 				connection.Open();
@@ -345,13 +371,17 @@ namespace SCI_Server
 				while (reader.Read())
 				{
 					dbUsername = reader.GetString(1);
-					dbPassword = reader.GetString(2);
+					dbPassword = reader.GetString(4);
 				}
-				Console.WriteLine($"dbUsername:\t{dbUsername}\tdbPassword:\t{dbPassword}\nUsername:\t{username}\tPassword:\t{password}");
+				Logging.Debug($"\ndbUsername:\t{dbUsername}\tdbPassword:\t{dbPassword}\nUsername:\t{username}\tPassword:\t{password}\ndbAccessCode:\t{dbAccessCode}\tdbSecruityKey:\t{dbSecruityKey}\nAccessCode:\t{accesscode}\tSecruityKey:\t{secruitykey}");
 				if (dbUsername == username && dbPassword == password)
 				{
-					Logging.Info("Login is valid");
-					return true;
+					if (dbSecruityKey == secruitykey && dbAccessCode == accesscode)
+					{
+						Logging.Info("Login is valid");
+						return true;
+					}
+					Logging.Error("Code / Key is invalid");
 				}
 				Logging.Info("Login is invalid");
 				return false;
@@ -360,6 +390,91 @@ namespace SCI_Server
 			{
 				Logging.Error(ex.Message);
 				return false;
+			}
+		}
+
+		/// <summary>
+		/// Search for the correct AccessCode by using the given SecruityKey
+		/// </summary>
+		/// <param name="secruitykey"></param>
+		/// <returns>Gives the AccessCode that's equals to the SecruityKey</returns>
+		public static int GetAccessCode(int secruitykey)
+		{
+			int result = -1;
+			SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_SYSTEM};");
+			try
+			{
+				connection.Open();
+				var sqlCommand = connection.CreateCommand();
+				sqlCommand.CommandText = $"SELECT * FROM keys WHERE keys.secruitykey = {secruitykey}";
+				SQLiteDataReader reader = sqlCommand.ExecuteReader();
+				while (reader.Read())
+				{
+					// get the dbAccessCode
+					result = reader.GetInt16(1);
+				}
+				reader.Close();
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Logging.Error(ex.Message);
+				return result;
+			}
+		}
+
+		/// <summary>
+		/// Search for the correct SecruityKey by using the given AccessCode
+		/// </summary>
+		/// <param name="accesscode"></param>
+		/// <returns>Gives the SecruityKey that's equals to the AccessCode</returns>
+		public static int GetSecruityKey(int accesscode)
+		{
+			int result = -1;
+			SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_SYSTEM};");
+			try
+			{
+				connection.Open();
+				var sqlCommand = connection.CreateCommand();
+				sqlCommand.CommandText = $"SELECT * FROM keys WHERE keys.accesscode = {accesscode}";
+				SQLiteDataReader reader = sqlCommand.ExecuteReader();
+				while (reader.Read())
+				{
+					// get the dbSecruityCode
+					result = reader.GetInt16(2);
+				}
+				reader.Close();
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Logging.Error(ex.Message);
+				return result;
+			}
+		}
+		public static string[] GetAllUserProfiles()
+		{
+			string[] users = [];
+			int counter = 0;
+			SQLiteConnection connection = new($"Data Source={Data.DIR_DATABASE + DB_USERS};");
+			try
+			{
+				connection.Open();
+				var sqlCommand = connection.CreateCommand();
+
+				sqlCommand.CommandText = $"SELECT * FROM profiles;";
+				SQLiteDataReader reader = sqlCommand.ExecuteReader();
+				while (reader.Read())
+				{
+					users[counter] = reader.GetString(counter + 1);
+					counter++;
+				}
+				Console.WriteLine($"Länge {users.Length}");
+				return users;
+			}
+			catch (Exception)
+			{
+				return users;
 			}
 		}
 	}
