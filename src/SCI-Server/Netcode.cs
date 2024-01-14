@@ -12,6 +12,7 @@ namespace SCI_Server
 		public static List<string> databaseCommands = [];
 		public static List<string> systemCommands = [];
 
+		// TODO: Optimize
 		public Netcode()
 		{
 			Logging.PrintHeader("Register NETCODE");

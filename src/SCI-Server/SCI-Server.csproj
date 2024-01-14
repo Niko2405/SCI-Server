@@ -6,6 +6,7 @@
     <RootNamespace>SCI_Server</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StartupObject>SCI_Server.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

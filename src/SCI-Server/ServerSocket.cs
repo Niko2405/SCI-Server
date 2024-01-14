@@ -10,22 +10,16 @@ using SCI_Logger;
 
 namespace SCI_Server
 {
-	internal class ServerSocket
+	/// <summary>
+	/// Create new Server Socket
+	/// </summary>
+	/// <param name="interfaceAddress"></param>
+	/// <param name="port"></param>
+	internal class ServerSocket(string interfaceAddress, int port)
 	{
-		private string _interfaceAddress;
-		private int _port;
+		private string _interfaceAddress = interfaceAddress;
+		private int _port = port;
 		private string _data = string.Empty;
-
-		/// <summary>
-		/// Create new Server Socket
-		/// </summary>
-		/// <param name="interfaceAddress"></param>
-		/// <param name="port"></param>
-		public ServerSocket(string interfaceAddress, int port)
-		{
-			_interfaceAddress = interfaceAddress;
-			_port = port;
-		}
 
 		/// <summary>
 		/// Port of the server socket
@@ -80,8 +74,8 @@ namespace SCI_Server
 			byte[] bytes = new byte[1024];
 			IPAddress ipAddress = IPAddress.Parse(_interfaceAddress);
 
-			IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _port);
-			Socket listener = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+			IPEndPoint localEndPoint = new(ipAddress, _port);
+			Socket listener = new(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 			try
 			{
 				listener.Bind(localEndPoint);
