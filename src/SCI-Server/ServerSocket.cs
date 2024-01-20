@@ -80,30 +80,31 @@ namespace SCI_Server
 			{
 				listener.Bind(localEndPoint);
 				listener.Listen(10);
-				Logging.Info($"Server is listening on {ipAddress}:{_port}");
+				Logging.Log(Logging.LogLevel.INFO, $"Server is listening on {ipAddress}:{_port}");
 				while (true)
 				{
 					Socket handler = listener.Accept();
 					Logging.PrintHeader("NEW CONNECTION");
-					Logging.Info($"Client connection: {handler.RemoteEndPoint}");
+					Logging.Log(Logging.LogLevel.INFO, $"Client connection: {handler.RemoteEndPoint}");
 
 					string Data = string.Empty;
 					while (true)
 					{
 						int byteReceive = handler.Receive(bytes);
 						Data += Encoding.UTF8.GetString(bytes, 0, byteReceive);
-						Logging.Debug($"New bytes receive: {byteReceive}");
+						Logging.Log(Logging.LogLevel.DEBUG, $"New bytes receive: {byteReceive}");
 						if (Data.IndexOf("<EOF>") > -1)
 						{
 							break;
 						}
 					}
 					Data = Data.Replace("<EOF>", "");
-					Logging.Info($"Received: {Data}");
+					Logging.Log(Logging.LogLevel.INFO, $"Received: {Data}");
 
 					//string response = NetworkCommands.ProcessCommand(Data);
-					string response = Netcode.ProcessCommand(Data);
-					Logging.Info($"Response: {response}");
+					//string response = CommandManager.ProcessCommand(Data);
+					string response = string.Empty;
+					Logging.Log(Logging.LogLevel.INFO, $"Response: {response}");
 
 					//Logging.Debug("End of data");
 
@@ -115,7 +116,7 @@ namespace SCI_Server
 			}
 			catch (Exception ex)
 			{
-				Logging.Error(ex.Message);
+				Logging.Log(Logging.LogLevel.ERROR, ex.Message);
 			}
 		}
 	}
