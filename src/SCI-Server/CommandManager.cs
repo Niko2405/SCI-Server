@@ -4,44 +4,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace SCI_Server
 {
 	internal class CommandManager
 	{
-		public List<string> SystemCommands = [];
-		public List<string> DatabaseCommands = [];
+		public List<string> SystemCommands = [
+			"help",
+			"info"
+		];
+		public List<string> DatabaseCommands = [
+			"db add user",
+			"db remove user",
+
+			"db set user username",
+			"db set user password",
+			"db set user firstname",
+			"db set user lastname",
+			"db set user permission",
+			"db set user locked",
+
+			"db get user username",
+			"db get user password",
+			"db get user firstname",
+			"db get user lastname",
+			"db get user permission",
+			"db get user locked",
+
+			"db get user data",
+			"db get user allUsernames",
+			"db login user",
+		];
 		public CommandManager()
 		{
-			SystemCommands.Add("system help");
-
-			DatabaseCommands.Add("database add user");
-			DatabaseCommands.Add("database remove user");
-
-			// set
-			DatabaseCommands.Add("database set user username");
-			DatabaseCommands.Add("database set user password");
-			DatabaseCommands.Add("database set user firstname");
-			DatabaseCommands.Add("database set user lastname");
-			DatabaseCommands.Add("database set user permission");
-			DatabaseCommands.Add("database set user lockedState");
-
-			// get
-			DatabaseCommands.Add("database get user username");
-			DatabaseCommands.Add("database get user password");
-			DatabaseCommands.Add("database get user firstname");
-			DatabaseCommands.Add("database get user lastname");
-			DatabaseCommands.Add("database get user permission");
-			DatabaseCommands.Add("database get user lockedState");
-
-			DatabaseCommands.Add("database get allUsers");
-			DatabaseCommands.Add("database get userData");
-
-			// login
-			DatabaseCommands.Add("database login user");
-
-			Logging.Log(Logging.LogLevel.DEBUG, $"SystemCommands:\t{SystemCommands.Count} commands available");
+			Logging.Log(Logging.LogLevel.DEBUG, $"SystemCommands:\t\t{SystemCommands.Count} commands available");
 			Logging.Log(Logging.LogLevel.DEBUG, $"DatabaseCommands:\t{DatabaseCommands.Count} commands available");
 		}
 
@@ -50,81 +46,49 @@ namespace SCI_Server
 		/// </summary>
 		/// <param name="command"></param>
 		/// <returns>String as result, LogLevel of this operation</returns>
-		public Tuple<string, Logging.LogLevel> ProcessCommand(string command)
+		public string ProcessCommand(string command)
 		{
 			string[] rawCommand = command.Split(' ');
 			try
 			{
-				// system help
+				#region HELP
 				if (command.Contains(SystemCommands[0]))
 				{
-					string result = "\n\t\t===> SystemCommands <===\n";
-					for (int i = 0; i < SystemCommands.Count; i++)
-					{
-						result += SystemCommands[i] + "\n";
-					}
-					result += "\n\t\t===> DatabaseCommands <===\n";
-					for (int i = 0; i < DatabaseCommands.Count; i++)
-					{
-						result += DatabaseCommands[i] + "\n";
-					}
-					return Tuple.Create(result, Logging.LogLevel.INFO);
+					return "Sorry, no help";
 				}
-
-				// database add user $username $password $firstname $lastname $permission $locked
-				if (command.StartsWith(DatabaseCommands[0]))
+				#endregion
+				else if (command.Contains(SystemCommands[1]))
 				{
-					if (DatabaseManager.AddUser(rawCommand[3], rawCommand[4], rawCommand[5], rawCommand[6], rawCommand[7], Convert.ToInt32(rawCommand[8])))
-					{
-						return Tuple.Create("DATABASE: OK", Logging.LogLevel.INFO);
-					}
-					else
-					{
-						return Tuple.Create("DATABASE: FAILED", Logging.LogLevel.ERROR);
-					}
+					return "No info";
 				}
-				// database remove user $username
-				if (command.StartsWith(DatabaseCommands[1]))
+				#region DB_ADD_USER
+				else if (command.Contains(DatabaseCommands[0]))
 				{
-					if (DatabaseManager.RemoveUser(rawCommand[3]))
-					{
-						return Tuple.Create("DATABASE: OK", Logging.LogLevel.INFO);
-					}
+					if (DataManager.AddUserProfile(rawCommand[3], rawCommand[4], rawCommand[5], rawCommand[6], rawCommand[7], Convert.ToBoolean(rawCommand[8])))
+						return "DATABASE: OK";
 					else
-					{
-						return Tuple.Create("DATABASE: FAILED", Logging.LogLevel.ERROR);
-					}
+						return "DATABASE: FAILED";
 				}
-				// database set user username $username $newUsername
-				if (command.StartsWith(DatabaseCommands[2]))
+				#endregion
+				#region DB_REMOVE_USER
+				else if (command.Contains(DatabaseCommands[1]))
 				{
-					if (DatabaseManager.SetUsername(rawCommand[4], rawCommand[5]))
-					{
-						return Tuple.Create("DATABASE: OK", Logging.LogLevel.INFO);
-					}
+					if (DataManager.RemoveUserProfile(rawCommand[3]))
+						return "DATABASE: OK";
 					else
-					{
-						return Tuple.Create("DATABASE: FAILED", Logging.LogLevel.ERROR);
-					}
+						return "DATABASE: FAILED";
 				}
-				// database set user firstname $username $newFirstname
-				if (command.StartsWith(DatabaseCommands[4]))
+				#endregion
+				else
 				{
-					if (DatabaseManager.SetFirstname(rawCommand[4], rawCommand[5]))
-					{
-						return Tuple.Create("DATABASE: OK", Logging.LogLevel.INFO);
-					}
-					else
-					{
-						return Tuple.Create("DATABASE: FAILED", Logging.LogLevel.ERROR);
-					}
+					return "Command not found";
 				}
 			}
-			catch (Exception ex)
+			catch (IndexOutOfRangeException ex)
 			{
-				return Tuple.Create(ex.Message, Logging.LogLevel.ERROR);
+				Logging.Log(Logging.LogLevel.ERROR, ex.Message);
+				return ex.Message;
 			}
-			return Tuple.Create("No command found", Logging.LogLevel.ERROR);
 		}
 	}
 }

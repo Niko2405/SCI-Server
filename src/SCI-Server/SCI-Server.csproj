@@ -8,13 +8,10 @@
     <Nullable>enable</Nullable>
     <StartupObject>SCI_Server.Program</StartupObject>
     <PublishAot>True</PublishAot>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <Trimming>none</Trimming>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.1" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <Reference Include="SCI-Logger">
       <HintPath>..\..\..\SCI-Logger\src\SCI-Logger\bin\Release\net8.0\SCI-Logger.dll</HintPath>

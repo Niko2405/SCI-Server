@@ -29,7 +29,7 @@ namespace SCI_Server
 			string response = string.Empty;
 			try
 			{
-				Logging.Info($"Connecting to {_serverAddress}:{_port}...");
+				Logging.Log(Logging.LogLevel.INFO, $"Connecting to {_serverAddress}:{_port}...");
 				IPAddress ipAddress = IPAddress.Parse(_serverAddress);
 				IPEndPoint remoteEndPoint = new IPEndPoint(ipAddress, _port);
 				Socket sender = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -38,7 +38,7 @@ namespace SCI_Server
 					sender.Connect(remoteEndPoint);
 					if (sender.RemoteEndPoint != null)
 					{
-						Logging.Info("Socket connected to " + sender.RemoteEndPoint.ToString());
+						Logging.Log(Logging.LogLevel.INFO, "Socket connected to " + sender.RemoteEndPoint.ToString());
 						byte[] bDataToServer = Encoding.UTF8.GetBytes(_data + "<EOF>");
 						int bytesSend = sender.Send(bDataToServer);
 						int bytesReceive = sender.Receive(bytes);
@@ -49,13 +49,13 @@ namespace SCI_Server
 				}
 				catch (Exception ex)
 				{
-					Logging.Error(ex.Message);
+					Logging.Log(Logging.LogLevel.ERROR, ex.Message);
 					return "No connection";
 				}
 			}
 			catch (Exception ex)
 			{
-				Logging.Error(ex.Message);
+				Logging.Log(Logging.LogLevel.ERROR, ex.Message);
 				return "No connection";
 			}
 			return response;

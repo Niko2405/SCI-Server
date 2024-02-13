@@ -1,5 +1,5 @@
 ﻿using SCI_Logger;
-using System.Windows.Input;
+using System.Text.Json;
 
 namespace SCI_Server
 {
@@ -8,19 +8,20 @@ namespace SCI_Server
 		static void Main(string[] args)
 		{
 			Console.WriteLine($"Logger Version: {Logging.VERSION}");
-			Logging.IsDebugEnabled = true;
+			Logging.SelectDebugMode(true);
+
+			// start init
+			Init.CreateFilesystem();
+			Init.CheckDatabase();
 
 			foreach (string arg in args)
 			{
 				if (arg == "--test")
 				{
+					TestModule.StartTest();
 					Environment.Exit(0);
 				}
 			}
-
-			// start init
-			Init.CreateFilesystem();
-			Init.CheckDatabase();
 
 			ServerSocket server = new("0.0.0.0", 8080);
 			Thread serverThread = new(server.StartListener);
@@ -31,9 +32,11 @@ namespace SCI_Server
 			while (true)
 			{
 				Console.Write(">");
-				string cmd = Console.ReadLine();
-				Tuple<string, Logging.LogLevel> result = manager.ProcessCommand(cmd);
-				Logging.Log(result.Item2, result.Item1);
+				string? cmd = Console.ReadLine();
+				if (cmd != null)
+				{
+					manager.ProcessCommand(cmd);
+				}
 			}
 		}
 	}

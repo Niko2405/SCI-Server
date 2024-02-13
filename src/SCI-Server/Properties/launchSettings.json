@@ -2,6 +2,10 @@
   "profiles": {
     "SCI-Server": {
       "commandName": "Project"
+    },
+    "Test": {
+      "commandName": "Project",
+      "commandLineArgs": "--test"
     }
   }
 }

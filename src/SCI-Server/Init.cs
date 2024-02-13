@@ -14,8 +14,7 @@ namespace SCI_Server
 			try
 			{
 				Directory.CreateDirectory(Data.DIR_ROOT);
-				Directory.CreateDirectory(Data.DIR_DATABASE);
-				Directory.CreateDirectory(Data.DIR_DATABASE);
+				Directory.CreateDirectory(Data.DIR_DATA);
 			}
 			catch (Exception ex)
 			{
@@ -29,11 +28,7 @@ namespace SCI_Server
 		/// </summary>
 		public static void CheckDatabase()
 		{
-			if (DatabaseManager.CreateUserTable())
-				Logging.Log(Logging.LogLevel.INFO, "OK");
-			// create default root
-			if (DatabaseManager.AddUser("root", "Admin123", "NULL", "NULL", "root", 0))
-				Logging.Log(Logging.LogLevel.INFO, "OK");
+			
 		}
 	}
 }
