@@ -16,4 +16,14 @@ namespace SCI_Server
 		public required string Permission { get; set; }
 		public required bool IsLocked { get; set; }
 	}
+
+	/// <summary>
+	/// AOT JSON
+	/// </summary>
+	[JsonSourceGenerationOptions(WriteIndented = true)]
+	[JsonSerializable(typeof(UserProfile), GenerationMode = JsonSourceGenerationMode.Metadata)]
+	[JsonSerializable(typeof(string))]
+	[JsonSerializable(typeof(bool))]
+	internal partial class UserProfileContext : JsonSerializerContext
+	{ }
 }

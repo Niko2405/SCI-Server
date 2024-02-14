@@ -8,7 +8,7 @@ namespace SCI_Server
 		static void Main(string[] args)
 		{
 			Console.WriteLine($"Logger Version: {Logging.VERSION}");
-			Logging.SelectDebugMode(true);
+			Logging.DebugEnabled = true;
 
 			// start init
 			Init.CreateFilesystem();

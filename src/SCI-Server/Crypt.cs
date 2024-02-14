@@ -10,7 +10,7 @@ namespace SCI_Server
 {
 	internal class Crypt
 	{
-		public static readonly byte[] SALT = [10, 20, 30, 40, 50, 60, 70, 80];
+		public static readonly byte[] SALT = [45, 12, 60, 51, 73, 7, 84, 97];
 		public static readonly byte[] IV = new byte[16];
 
 		/// <summary>
@@ -23,7 +23,7 @@ namespace SCI_Server
 		{
 			byte[] buffer = Encoding.UTF8.GetBytes(text);
 			Aes aes = Aes.Create();
-			aes.Padding = PaddingMode.Zeros;
+			//aes.Padding = PaddingMode.Zeros;
 			aes.Key = CreateKey(Data.CRYPT_PASSWORD);
 			aes.IV = IV;
 
@@ -47,7 +47,7 @@ namespace SCI_Server
 		{
 			byte[] buffer = Convert.FromBase64String(cryptedText);
 			Aes aes = Aes.Create();
-			aes.Padding = PaddingMode.Zeros;
+			//aes.Padding = PaddingMode.Zeros;
 			aes.Key = CreateKey(Data.CRYPT_PASSWORD);
 			aes.IV = IV;
 

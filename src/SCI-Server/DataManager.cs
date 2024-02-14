@@ -30,7 +30,7 @@ namespace SCI_Server
 					LastName = lastname,
 					IsLocked = isLocked
 				};
-				string jsonString = JsonSerializer.Serialize(newUser, SourceGenerationContext.Default.UserProfile);
+				string jsonString = JsonSerializer.Serialize(newUser, UserProfileContext.Default.UserProfile);
 				File.WriteAllText($"{Data.DIR_DATA + username}.json", jsonString);
 				return true;
 			}
@@ -78,12 +78,12 @@ namespace SCI_Server
 				{
 					// read data
 					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, SourceGenerationContext.Default.UserProfile);
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
 					if (userProfile != null)
 					{
 						Logging.Log(Logging.LogLevel.INFO, $"Update username ({userProfile.Username} => {newUsername})");
 						userProfile.Username = newUsername;
-						jsonString = JsonSerializer.Serialize(userProfile, SourceGenerationContext.Default.UserProfile);
+						jsonString = JsonSerializer.Serialize(userProfile, UserProfileContext.Default.UserProfile);
 						File.WriteAllText(Data.DIR_DATA + newUsername + ".json", jsonString);
 
 						Logging.Log(Logging.LogLevel.INFO, $"Delete old profile of {username}");
@@ -113,12 +113,12 @@ namespace SCI_Server
 				{
 					// read data
 					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, SourceGenerationContext.Default.UserProfile);
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
 					if (userProfile != null)
 					{
 						Logging.Log(Logging.LogLevel.INFO, $"Update password ({userProfile.Password} => {newPassword})");
 						userProfile.Password = newPassword;
-						jsonString = JsonSerializer.Serialize(userProfile, SourceGenerationContext.Default.UserProfile);
+						jsonString = JsonSerializer.Serialize(userProfile, UserProfileContext.Default.UserProfile);
 
 						// write new data
 						File.WriteAllText(Data.DIR_DATA + username + ".json", jsonString);
@@ -148,12 +148,12 @@ namespace SCI_Server
 				{
 					// read data
 					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, SourceGenerationContext.Default.UserProfile);
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
 					if (userProfile != null)
 					{
 						Logging.Log(Logging.LogLevel.INFO, $"Update permission ({userProfile.Password} => {newPermission})");
 						userProfile.Permission = newPermission;
-						jsonString = JsonSerializer.Serialize(userProfile, SourceGenerationContext.Default.UserProfile);
+						jsonString = JsonSerializer.Serialize(userProfile, UserProfileContext.Default.UserProfile);
 
 						// write new data
 						File.WriteAllText(Data.DIR_DATA + username + ".json", jsonString);
@@ -178,7 +178,7 @@ namespace SCI_Server
 				{
 					// read data
 					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, SourceGenerationContext.Default.UserProfile);
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
 					if (userProfile != null)
 					{
 						//Logging.Log(Logging.LogLevel.INFO, $"Update permission ({userProfile.Password} => {newPermission})");
