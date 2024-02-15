@@ -1,11 +1,5 @@
 ﻿using SCI_Logger;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SCI_Server
 {
@@ -16,9 +10,9 @@ namespace SCI_Server
 		{
 			try
 			{
-				if (File.Exists($"{Data.DIR_DATA + username}.json"))
+				if (File.Exists($"{Config.DIR_DATA + username}.json"))
 				{
-					Logging.Log(Logging.LogLevel.WARN, $"User {Data.DIR_DATA + username} already exists. Use RemoveUserProfile()");
+					Logging.Log(Logging.LogLevel.WARN, $"User {Config.DIR_DATA + username} already exists. Use RemoveUserProfile()");
 					return false;
 				}
 				var newUser = new UserProfile()
@@ -30,8 +24,8 @@ namespace SCI_Server
 					LastName = lastname,
 					IsLocked = isLocked
 				};
-				string jsonString = JsonSerializer.Serialize(newUser, UserProfileContext.Default.UserProfile);
-				File.WriteAllText($"{Data.DIR_DATA + username}.json", jsonString);
+				string jsonString = JsonSerializer.Serialize(newUser, Config.JsonOptions);
+				File.WriteAllText($"{Config.DIR_DATA + username}.json", jsonString);
 				return true;
 			}
 			catch (Exception ex)
@@ -49,9 +43,9 @@ namespace SCI_Server
 					Logging.Log(Logging.LogLevel.WARN, "Cannot remove system profile");
 					return false;
 				}
-				if (File.Exists(Data.DIR_DATA + username + ".json"))
+				if (File.Exists(Config.DIR_DATA + username + ".json"))
 				{
-					File.Delete(Data.DIR_DATA + username + ".json");
+					File.Delete(Config.DIR_DATA + username + ".json");
 					Logging.Log(Logging.LogLevel.INFO, $"UserProfile of {username} deleted");
 					return true;
 				}
@@ -74,20 +68,20 @@ namespace SCI_Server
 					Logging.Log(Logging.LogLevel.WARN, "Cannot edit system profile");
 					return false;
 				}
-				if (File.Exists(Data.DIR_DATA + username + ".json"))
+				if (File.Exists(Config.DIR_DATA + username + ".json"))
 				{
 					// read data
-					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
+					string jsonString = File.ReadAllText(Config.DIR_DATA + username + ".json");
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, Config.JsonOptions);
 					if (userProfile != null)
 					{
 						Logging.Log(Logging.LogLevel.INFO, $"Update username ({userProfile.Username} => {newUsername})");
 						userProfile.Username = newUsername;
-						jsonString = JsonSerializer.Serialize(userProfile, UserProfileContext.Default.UserProfile);
-						File.WriteAllText(Data.DIR_DATA + newUsername + ".json", jsonString);
+						jsonString = JsonSerializer.Serialize(userProfile, Config.JsonOptions);
+						File.WriteAllText(Config.DIR_DATA + newUsername + ".json", jsonString);
 
 						Logging.Log(Logging.LogLevel.INFO, $"Delete old profile of {username}");
-						File.Delete(Data.DIR_DATA + username + ".json");
+						File.Delete(Config.DIR_DATA + username + ".json");
 						return true;
 					}
 				}
@@ -109,19 +103,19 @@ namespace SCI_Server
 					Logging.Log(Logging.LogLevel.WARN, "Cannot edit system profile");
 					return false;
 				}
-				if (File.Exists(Data.DIR_DATA + username + ".json"))
+				if (File.Exists(Config.DIR_DATA + username + ".json"))
 				{
 					// read data
-					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
+					string jsonString = File.ReadAllText(Config.DIR_DATA + username + ".json");
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, Config.JsonOptions);
 					if (userProfile != null)
 					{
 						Logging.Log(Logging.LogLevel.INFO, $"Update password ({userProfile.Password} => {newPassword})");
 						userProfile.Password = newPassword;
-						jsonString = JsonSerializer.Serialize(userProfile, UserProfileContext.Default.UserProfile);
+						jsonString = JsonSerializer.Serialize(userProfile, Config.JsonOptions);
 
 						// write new data
-						File.WriteAllText(Data.DIR_DATA + username + ".json", jsonString);
+						File.WriteAllText(Config.DIR_DATA + username + ".json", jsonString);
 
 						Logging.Log(Logging.LogLevel.INFO, $"Change password profile of {username}");
 						return true;
@@ -144,19 +138,19 @@ namespace SCI_Server
 					Logging.Log(Logging.LogLevel.WARN, "Cannot edit system profile");
 					return false;
 				}
-				if (File.Exists(Data.DIR_DATA + username + ".json"))
+				if (File.Exists(Config.DIR_DATA + username + ".json"))
 				{
 					// read data
-					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
+					string jsonString = File.ReadAllText(Config.DIR_DATA + username + ".json");
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, Config.JsonOptions);
 					if (userProfile != null)
 					{
 						Logging.Log(Logging.LogLevel.INFO, $"Update permission ({userProfile.Password} => {newPermission})");
 						userProfile.Permission = newPermission;
-						jsonString = JsonSerializer.Serialize(userProfile, UserProfileContext.Default.UserProfile);
+						jsonString = JsonSerializer.Serialize(userProfile, Config.JsonOptions);
 
 						// write new data
-						File.WriteAllText(Data.DIR_DATA + username + ".json", jsonString);
+						File.WriteAllText(Config.DIR_DATA + username + ".json", jsonString);
 
 						Logging.Log(Logging.LogLevel.INFO, $"Change permission profile of {username}");
 						return true;
@@ -174,11 +168,11 @@ namespace SCI_Server
 		{
 			try
 			{
-				if (File.Exists(Data.DIR_DATA + username + ".json"))
+				if (File.Exists(Config.DIR_DATA + username + ".json"))
 				{
 					// read data
-					string jsonString = File.ReadAllText(Data.DIR_DATA + username + ".json");
-					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, UserProfileContext.Default.UserProfile);
+					string jsonString = File.ReadAllText(Config.DIR_DATA + username + ".json");
+					var userProfile = JsonSerializer.Deserialize<UserProfile>(jsonString, Config.JsonOptions);
 					if (userProfile != null)
 					{
 						//Logging.Log(Logging.LogLevel.INFO, $"Update permission ({userProfile.Password} => {newPermission})");

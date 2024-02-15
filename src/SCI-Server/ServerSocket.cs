@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using SCI_Logger;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
-
-using SCI_Logger;
 
 namespace SCI_Server
 {
@@ -15,108 +10,61 @@ namespace SCI_Server
 	/// </summary>
 	/// <param name="interfaceAddress"></param>
 	/// <param name="port"></param>
-	internal class ServerSocket(string interfaceAddress, int port)
+	public class ServerSocket(string ServerAddress, int ServerPort)
 	{
-		private string _interfaceAddress = interfaceAddress;
-		private int _port = port;
-		private string _data = string.Empty;
-
-		/// <summary>
-		/// Port of the server socket
-		/// </summary>
-		public int Port
-		{
-			get
-			{
-				return _port;
-			}
-			set
-			{
-				_port = value;
-			}
-		}
-
-		/// <summary>
-		/// The interface to which the server listens.
-		/// </summary>
-		public string InterfaceAddress
-		{
-			get
-			{
-				return _interfaceAddress;
-			}
-			set
-			{
-				_interfaceAddress = value;
-			}
-		}
-
-		/// <summary>
-		/// Datastream
-		/// </summary>
-		public string Data
-		{
-			get
-			{
-				return _data;
-			}
-			set
-			{
-				_data = value;
-			}
-		}
-
 		/// <summary>
 		/// Create an instance of the server
 		/// </summary>
 		public void StartListener()
 		{
 			byte[] bytes = new byte[1024];
-			IPAddress ipAddress = IPAddress.Parse(_interfaceAddress);
-
-			IPEndPoint localEndPoint = new(ipAddress, _port);
-			Socket listener = new(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-			try
+			if (ServerAddress != null)
 			{
-				listener.Bind(localEndPoint);
-				listener.Listen(10);
-				Logging.Log(Logging.LogLevel.INFO, $"Server is listening on {ipAddress}:{_port}");
-				while (true)
+				IPAddress ipAddress = IPAddress.Parse(ServerAddress);
+				IPEndPoint localEndPoint = new(ipAddress, ServerPort);
+				Socket listener = new(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+				try
 				{
-					Socket handler = listener.Accept();
-					Logging.PrintHeader("NEW CONNECTION");
-					Logging.Log(Logging.LogLevel.INFO, $"Client connection: {handler.RemoteEndPoint}");
-
-					string Data = string.Empty;
+					listener.Bind(localEndPoint);
+					listener.Listen(10);
+					Logging.Log(Logging.LogLevel.INFO, $"Server is listening on {ServerAddress}:{ServerPort}");
 					while (true)
 					{
-						int byteReceive = handler.Receive(bytes);
-						Data += Encoding.UTF8.GetString(bytes, 0, byteReceive);
-						Logging.Log(Logging.LogLevel.DEBUG, $"New bytes receive: {byteReceive}");
-						if (Data.IndexOf("<EOF>") > -1)
+						Socket handler = listener.Accept();
+						Logging.PrintHeader("NEW CONNECTION");
+						Logging.Log(Logging.LogLevel.INFO, $"Client connection: {handler.RemoteEndPoint}");
+
+						string Data = string.Empty;
+						while (true)
 						{
-							break;
+							int byteReceive = handler.Receive(bytes);
+							Data += Encoding.UTF8.GetString(bytes, 0, byteReceive);
+							Logging.Log(Logging.LogLevel.DEBUG, $"New bytes receive: {byteReceive}");
+							if (Data.IndexOf("<EOF>") > -1)
+							{
+								break;
+							}
 						}
+						Data = Data.Replace("<EOF>", "");
+						Logging.Log(Logging.LogLevel.INFO, $"Received: {Data}");
+
+						//string response = NetworkCommands.ProcessCommand(Data);
+						//string response = CommandManager.ProcessCommand(Data);
+						string response = "OK";
+						Logging.Log(Logging.LogLevel.INFO, $"Response: {response}");
+
+						//Logging.Debug("End of data");
+
+						byte[] bDataToClient = Encoding.UTF8.GetBytes(response);
+						handler.Send(bDataToClient);
+						handler.Shutdown(SocketShutdown.Both);
+						handler.Close();
 					}
-					Data = Data.Replace("<EOF>", "");
-					Logging.Log(Logging.LogLevel.INFO, $"Received: {Data}");
-
-					//string response = NetworkCommands.ProcessCommand(Data);
-					//string response = CommandManager.ProcessCommand(Data);
-					string response = string.Empty;
-					Logging.Log(Logging.LogLevel.INFO, $"Response: {response}");
-
-					//Logging.Debug("End of data");
-
-					byte[] bDataToClient = Encoding.UTF8.GetBytes(response);
-					handler.Send(bDataToClient);
-					handler.Shutdown(SocketShutdown.Both);
-					handler.Close();
 				}
-			}
-			catch (Exception ex)
-			{
-				Logging.Log(Logging.LogLevel.ERROR, ex.Message);
+				catch (Exception ex)
+				{
+					Logging.Log(Logging.LogLevel.ERROR, ex.Message);
+				}
 			}
 		}
 	}

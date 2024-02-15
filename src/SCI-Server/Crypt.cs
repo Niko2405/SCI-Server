@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SCI_Server
 {
@@ -24,7 +19,7 @@ namespace SCI_Server
 			byte[] buffer = Encoding.UTF8.GetBytes(text);
 			Aes aes = Aes.Create();
 			//aes.Padding = PaddingMode.Zeros;
-			aes.Key = CreateKey(Data.CRYPT_PASSWORD);
+			aes.Key = CreateKey(Config.CRYPT_PASSWORD);
 			aes.IV = IV;
 
 			using (MemoryStream memoryStream = new MemoryStream())
@@ -48,7 +43,7 @@ namespace SCI_Server
 			byte[] buffer = Convert.FromBase64String(cryptedText);
 			Aes aes = Aes.Create();
 			//aes.Padding = PaddingMode.Zeros;
-			aes.Key = CreateKey(Data.CRYPT_PASSWORD);
+			aes.Key = CreateKey(Config.CRYPT_PASSWORD);
 			aes.IV = IV;
 
 			using (MemoryStream memoryStream = new MemoryStream())

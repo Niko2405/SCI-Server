@@ -1,11 +1,6 @@
 ﻿using SCI_Logger;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace SCI_Server
 {
@@ -82,17 +77,17 @@ namespace SCI_Server
 				Description = "Test",
 				Name = "TestName",
 			};
-			string jsonString = JsonSerializer.Serialize(TestData, TestModuleContext.Default.TestModule);
+			string jsonString = JsonSerializer.Serialize(TestData, Config.JsonOptions);
 
 			// write new data
-			File.WriteAllText(Data.DIR_DATA + "TestAOT.json", jsonString);
+			File.WriteAllText(Config.DIR_DATA + "TestAOT.json", jsonString);
 			#endregion
 
 			#region Test Crypt
 			Logging.PrintHeader("Crypt Test");
 
 			var rand = new Random();
-			int count = 5000;
+			int count = 500;
 			long[] buffer = new long[count];
 
 			Logging.Log(Logging.LogLevel.INFO, $"Start filling the buffer: {count}");
@@ -104,26 +99,20 @@ namespace SCI_Server
 			Logging.Log(Logging.LogLevel.INFO, "Start encryp...");
 			for (int i = 0; i < buffer.Length; i++)
 			{
-				//long x = rand.NextInt64(long.MaxValue / 2, long.MaxValue);
-
 				string xCrypted = Crypt.Encrypt(buffer[i].ToString());
 				string xEncrypted = Crypt.Decrypt(xCrypted);
 				Logging.Log(Logging.LogLevel.INFO, $"Run Test [{i}/{count}]\tOriginal Value: {buffer[i]}\tSHA512 Value: {xCrypted}\tEncrypted Value: {xEncrypted}", false);
-				
+
 				if (buffer[i].ToString() != xEncrypted)
 					Logging.Log(Logging.LogLevel.ERROR, $"Crypt Overflow: Len Original Value:{buffer[i].ToString().Length}\tLen Encrypted Value: {xEncrypted.Length}");
 			}
 			#endregion
+
+			#region RS232 Test
+			Logging.PrintHeader("RS232 Test");
+			Logging.Log(Logging.LogLevel.INFO, "Send 'Hello World'");
+			//SerialComModule.RS232.SendCommand("Hello World");
+			#endregion
 		}
 	}
-
-	/// <summary>
-	/// AOT JSON
-	/// </summary>
-	[JsonSourceGenerationOptions(WriteIndented = true)]
-	[JsonSerializable(typeof(TestModule), GenerationMode = JsonSourceGenerationMode.Metadata)]
-	[JsonSerializable(typeof(int))]
-	[JsonSerializable(typeof(string))]
-	internal partial class TestModuleContext : JsonSerializerContext
-	{ }
 }

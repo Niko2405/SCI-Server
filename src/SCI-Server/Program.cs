@@ -11,8 +11,10 @@ namespace SCI_Server
 			Logging.DebugEnabled = true;
 
 			// start init
-			Init.CreateFilesystem();
+			Init.CheckFilesystem();
+			Init.CheckConfig();
 			Init.CheckDatabase();
+			Config.Init();
 
 			foreach (string arg in args)
 			{
@@ -23,20 +25,27 @@ namespace SCI_Server
 				}
 			}
 
-			ServerSocket server = new("0.0.0.0", 8080);
-			Thread serverThread = new(server.StartListener);
-			serverThread.Start();
-
-			CommandManager manager = new();
-			Thread.Sleep(1000);
-			while (true)
+			if (Config.currentConfig != null)
 			{
-				Console.Write(">");
-				string? cmd = Console.ReadLine();
-				if (cmd != null)
+				ServerSocket server = new(Config.currentConfig.ServerAddress, Config.currentConfig.ServerPort);
+				Thread serverThread = new(server.StartListener);
+				serverThread.Start();
+
+				CommandManager manager = new();
+				Thread.Sleep(1000);
+				while (true)
 				{
-					manager.ProcessCommand(cmd);
+					Console.Write(">");
+					string? cmd = Console.ReadLine();
+					if (cmd != null)
+					{
+						manager.ProcessCommand(cmd);
+					}
 				}
+			}
+			else
+			{
+				Logging.Log(Logging.LogLevel.ERROR, "Config cannot load");
 			}
 		}
 	}
