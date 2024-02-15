@@ -10,7 +10,19 @@
     <PublishAot>False</PublishAot>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Trimming>none</Trimming>
+    <PublishTrimmed>False</PublishTrimmed>
+    <Title>SCI-Server</Title>
+    <Copyright>Niko2405</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <SignAssembly>False</SignAssembly>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />

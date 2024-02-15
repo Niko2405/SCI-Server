@@ -1,6 +1,5 @@
 ﻿using SCI_Logger;
 using System.IO.Ports;
-using System.Runtime.Serialization;
 
 namespace SCI_Server
 {
@@ -8,11 +7,6 @@ namespace SCI_Server
 	{
 		public class RS232
 		{
-			public string? SelectedPortName { get; set; }
-
-			public int SelectedBaudrate { get; set; }
-
-
 			private static bool locked = false;
 			private static SerialPort? serialPort;
 
@@ -20,42 +14,61 @@ namespace SCI_Server
 			{
 				return SerialPort.GetPortNames();
 			}
-			public string SendCommand(string command, bool readLine = false)
+
+			/// <summary>
+			/// Send command to COM Port
+			/// </summary>
+			/// <param name="command"></param>
+			/// <param name="readLine"></param>
+			/// <returns>If readLine is true, repsonse string will be created</returns>
+			public static string SendCommand(string command, bool readLine = false)
 			{
-				string response = string.Empty;
-				serialPort = new SerialPort
+				if (Config.currentConfig != null)
 				{
-					PortName = SelectedPortName,
-					BaudRate = SelectedBaudrate,
-					StopBits = StopBits.One,
-					DataBits = 8,
-					Parity = 0
-				};
-				while (locked)
-				{
-					Thread.Sleep(10);
-					Logging.Log(Logging.LogLevel.DEBUG, "Operation is locked");
-				}
-				if (!serialPort.IsOpen)
-				{
-					try
+					string response = string.Empty;
+					serialPort = new SerialPort
 					{
-						serialPort.Open();
-						locked = true;
-						serialPort.WriteLine(command);
-						if (readLine)
+						PortName = Config.currentConfig.SerialComModulePortName,
+						BaudRate = Config.currentConfig.SerialComBaudrate,
+						StopBits = StopBits.One,
+						DataBits = 8,
+						Parity = Parity.None,
+						ReadTimeout = 500,
+					};
+					while (locked)
+					{
+						Thread.Sleep(1);
+						Logging.Log(Logging.LogLevel.DEBUG, "Operation is locked");
+					}
+					if (!serialPort.IsOpen)
+					{
+						try
 						{
-							response = serialPort.ReadLine();
+							serialPort.Open();
+							locked = true;
+							serialPort.WriteLine(command);
+							if (readLine)
+							{
+								response = serialPort.ReadLine();
+							}
+							serialPort.Close();
+							locked = false;
 						}
-						serialPort.Close();
-						locked = false;
+						catch (TimeoutException)
+						{
+							Logging.Log(Logging.LogLevel.ERROR, "Timeout by reading value");
+						}
+						catch (Exception ex)
+						{
+							Logging.Log(Logging.LogLevel.ERROR, ex.Message);
+						}
 					}
-					catch (Exception ex)
-					{
-						Logging.Log(Logging.LogLevel.ERROR, ex.Message);
-					}
+					return response;
 				}
-				return response;
+				else
+				{
+					return "Cannot read config";
+				}
 			}
 		}
 	}

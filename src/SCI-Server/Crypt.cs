@@ -27,6 +27,7 @@ namespace SCI_Server
 				using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
 				{
 					cryptoStream.Write(buffer, 0, buffer.Length);
+					cryptoStream.FlushFinalBlock();
 				}
 				return Convert.ToBase64String(memoryStream.ToArray());
 			}
@@ -69,6 +70,19 @@ namespace SCI_Server
 			var keyGenerator = new Rfc2898DeriveBytes(password, SALT, Iterations, HashAlgorithmName.SHA512);
 
 			return keyGenerator.GetBytes(keyBytes);
+		}
+
+		public static bool CheckEncoding(string value, Encoding encoding)
+		{
+			bool retCode;
+			var charArray = value.ToCharArray();
+			byte[] bytes = new byte[charArray.Length];
+			for (int i = 0; i < charArray.Length; i++)
+			{
+				bytes[i] = (byte)charArray[i];
+			}
+			retCode = string.Equals(encoding.GetString(bytes, 0, bytes.Length), value, StringComparison.InvariantCulture);
+			return retCode;
 		}
 	}
 }

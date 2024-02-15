@@ -5,6 +5,9 @@ namespace SCI_Server
 {
 	public class Config
 	{
+		/// <summary>
+		/// Global JsonOptions
+		/// </summary>
 		public static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
 		public static readonly string DIR_ROOT = "server/";
@@ -16,21 +19,48 @@ namespace SCI_Server
 
 		public static ConfigObject? currentConfig;
 
+		/// <summary>
+		/// Load config from file
+		/// </summary>
 		public static void Init()
 		{
 			if (!File.Exists(CONFIG_FILE))
 			{
 				Logging.Log(Logging.LogLevel.WARN, "No config file found. Create default config");
-				File.WriteAllText(CONFIG_FILE, JsonSerializer.Serialize(new ConfigObject(), JsonOptions));
+				try
+				{
+					File.WriteAllText(CONFIG_FILE, JsonSerializer.Serialize(new ConfigObject(), JsonOptions));
+				}
+				catch (UnauthorizedAccessException)
+				{
+					Logging.Log(Logging.LogLevel.ERROR, "No permission to create files in this directory");
+					Environment.Exit(1);
+				}
 			}
+			Logging.Log(Logging.LogLevel.INFO, "Init Config");
 			currentConfig = JsonSerializer.Deserialize<ConfigObject>(File.ReadAllText(CONFIG_FILE), JsonOptions);
 		}
 
+		/// <summary>
+		/// Save current config
+		/// </summary>
 		public static void SaveConfig()
 		{
-			File.WriteAllText(CONFIG_FILE, JsonSerializer.Serialize(currentConfig, JsonOptions));
+			try
+			{
+				File.WriteAllText(CONFIG_FILE, JsonSerializer.Serialize(currentConfig, JsonOptions));
+				Logging.Log(Logging.LogLevel.INFO, "Config saved");
+			}
+			catch (UnauthorizedAccessException)
+			{
+				Logging.Log(Logging.LogLevel.ERROR, "No permission to create files in this directory");
+				Environment.Exit(1);
+			}
 		}
 
+		/// <summary>
+		/// Primary Config Interface
+		/// </summary>
 		public class ConfigObject
 		{
 			public string ServerAddress { get; set; } = "127.0.0.1";

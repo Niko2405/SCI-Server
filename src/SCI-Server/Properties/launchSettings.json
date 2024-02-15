@@ -1,11 +1,11 @@
 {
   "profiles": {
-    "SCI-Server": {
-      "commandName": "Project"
-    },
-    "Test": {
+    "SCI-Server - Test": {
       "commandName": "Project",
       "commandLineArgs": "--test"
+    },
+    "SCI-Server - Start": {
+      "commandName": "Project"
     }
   }
 }

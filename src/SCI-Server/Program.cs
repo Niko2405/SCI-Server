@@ -1,5 +1,4 @@
 ﻿using SCI_Logger;
-using System.Text.Json;
 
 namespace SCI_Server
 {
@@ -12,19 +11,19 @@ namespace SCI_Server
 
 			// start init
 			Init.CheckFilesystem();
-			Init.CheckConfig();
-			Init.CheckDatabase();
 			Config.Init();
 
 			foreach (string arg in args)
 			{
 				if (arg == "--test")
 				{
+					Console.Title = "SCI-Server TestModule";
 					TestModule.StartTest();
 					Environment.Exit(0);
 				}
 			}
 
+			Console.Title = "SCI-Server";
 			if (Config.currentConfig != null)
 			{
 				ServerSocket server = new(Config.currentConfig.ServerAddress, Config.currentConfig.ServerPort);
@@ -39,8 +38,14 @@ namespace SCI_Server
 					string? cmd = Console.ReadLine();
 					if (cmd != null)
 					{
-						manager.ProcessCommand(cmd);
+						if (cmd == "exit")
+						{
+							Config.SaveConfig();
+							Environment.Exit(0);
+						}
+						Console.WriteLine(manager.ProcessCommand(cmd));
 					}
+
 				}
 			}
 			else
