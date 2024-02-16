@@ -1,4 +1,5 @@
-﻿using SCI_Logger;
+﻿using Microsoft.Data.Sqlite;
+using SCI_Logger;
 using System.Text.Json;
 
 namespace SCI_Server
@@ -17,6 +18,7 @@ namespace SCI_Server
 		{
 			RunTestLoggerSystem();
 			RunTestDataManager();
+			RunTestDatabaseManager();
 			RunTestMultipleJsonContext();
 			RunTestCrypt();
 			RunTestRS232();
@@ -34,6 +36,7 @@ namespace SCI_Server
 			Logging.Log(Logging.LogLevel.DEBUG, "This is an debug message");
 		}
 
+		[Obsolete("Will be removed later", false)]
 		private static void RunTestDataManager()
 		{
 			Logging.PrintHeader("RunTestDataManager");
@@ -80,6 +83,63 @@ namespace SCI_Server
 			DataManager.RemoveUserProfile("user1");
 			DataManager.RemoveUserProfile("user4");
 		}
+		private static void RunTestDatabaseManager()
+		{
+			Logging.PrintHeader("RunTestDatabaseManager");
+			try
+			{
+				Logging.Log(Logging.LogLevel.INFO, "Create new test.db");
+				using var connection = new SqliteConnection($"Data Source=test.db;");
+				connection.Open();
+				Thread.Sleep(DELAY);
+
+				Logging.Log(Logging.LogLevel.INFO, "Create new test table");
+				var command = connection.CreateCommand();
+				command.CommandText = @"
+					CREATE TABLE IF NOT EXISTS testdata (
+						id			INTEGER	NOT NULL PRIMARY KEY AUTOINCREMENT,
+						username	TEXT NOT NULL UNIQUE ON CONFLICT FAIL,
+						password	TEXT NOT NULL
+					);";
+				command.ExecuteNonQuery();
+				Thread.Sleep(DELAY);
+
+				Logging.Log(Logging.LogLevel.INFO, "Add test user to table");
+				command.CommandText = "INSERT INTO testdata (username, password) VALUES ('TestUser', 'TestPassword');";
+				command.ExecuteNonQuery();
+				Thread.Sleep(DELAY);
+
+				Logging.Log(Logging.LogLevel.INFO, "Get test user password");
+				command.CommandText = "SELECT testdata.password FROM testdata WHERE testdata.username = 'TestUser';";
+				string? result = command.ExecuteScalar().ToString();
+				if (result != null)
+				{
+					if (result == "TestPassword")
+					{
+						Logging.Log(Logging.LogLevel.INFO, "DatabaseManager: OK");
+					}
+					else
+					{
+						Logging.Log(Logging.LogLevel.ERROR, "DatabaseManager: FAILED");
+					}
+				}
+				Logging.Log(Logging.LogLevel.INFO, "Drop the table in test.db");
+				command.CommandText = "DROP TABLE testdata;";
+				command.ExecuteNonQuery();
+				Thread.Sleep(DELAY);
+
+				Logging.Log(Logging.LogLevel.INFO, "Close connections");
+				connection.Close();
+				SqliteConnection.ClearAllPools();
+				
+				Logging.Log(Logging.LogLevel.INFO, "Delete test database");
+				File.Delete("test.db");
+			}
+			catch (Exception ex)
+			{
+				Logging.Log(Logging.LogLevel.ERROR, ex.Message);
+			}
+		}
 
 		private static void RunTestMultipleJsonContext()
 		{
@@ -93,7 +153,7 @@ namespace SCI_Server
 			string jsonString = JsonSerializer.Serialize(TestData, Config.JsonOptions);
 
 			// write new data
-			File.WriteAllText(Config.DIR_DATA + "TestAOT.json", jsonString);
+			File.WriteAllText(Config.DIR_DATABASE + "tmp.json", jsonString);
 		}
 
 		private static void RunTestCrypt()
@@ -115,7 +175,7 @@ namespace SCI_Server
 			{
 				string xCrypted = Crypt.Encrypt(buffer[i].ToString());
 				string xEncrypted = Crypt.Decrypt(xCrypted);
-				Logging.Log(Logging.LogLevel.INFO, $"Run Test [{i + 1}/{count}]\tOriginal Value: {buffer[i]}\tSHA512 Value: {xCrypted}\tEncrypted Value: {xEncrypted}", false);
+				Logging.Log(Logging.LogLevel.INFO, $"Run Test [{i + 1}/{count}]\tOriginal Value: {buffer[i]}\tCrypted Value: {xCrypted}\tEncrypted Value: {xEncrypted}", false);
 
 				if (buffer[i].ToString() != xEncrypted)
 					Logging.Log(Logging.LogLevel.ERROR, $"Crypt Overflow: Len Original Value:{buffer[i].ToString().Length}\tLen Encrypted Value: {xEncrypted.Length}");

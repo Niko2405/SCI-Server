@@ -5,6 +5,9 @@ using System.Text;
 
 namespace SCI_Server
 {
+
+	// TODO Add Encrypt and Decrypt func
+
 	/// <summary>
 	/// Create new Server Socket
 	/// </summary>

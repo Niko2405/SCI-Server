@@ -9,7 +9,7 @@ namespace SCI_Server
 			try
 			{
 				Directory.CreateDirectory(Config.DIR_ROOT);
-				Directory.CreateDirectory(Config.DIR_DATA);
+				Directory.CreateDirectory(Config.DIR_DATABASE);
 			}
 			catch (Exception ex)
 			{

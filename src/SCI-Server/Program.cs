@@ -6,15 +6,20 @@ namespace SCI_Server
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine($"Logger Version: {Logging.VERSION}");
-			Logging.DebugEnabled = true;
-
+			Console.WriteLine($"Logger Version:\t\t{Logging.VERSION}");
+			Console.WriteLine($"Database Version:\t{DatabaseManager.VERSION}");
+			
 			// start init
 			Init.CheckFilesystem();
 			Config.Init();
 
 			foreach (string arg in args)
 			{
+				if (arg == "--debug")
+				{
+					Logging.DebugEnabled = true;
+					Logging.Log(Logging.LogLevel.DEBUG, "Debug is enabled");
+				}
 				if (arg == "--test")
 				{
 					Console.Title = "SCI-Server TestModule";

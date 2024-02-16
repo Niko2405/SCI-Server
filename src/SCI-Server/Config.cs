@@ -11,7 +11,7 @@ namespace SCI_Server
 		public static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
 		public static readonly string DIR_ROOT = "server/";
-		public static readonly string DIR_DATA = DIR_ROOT + "data/";
+		public static readonly string DIR_DATABASE = DIR_ROOT + "data/";
 		public static readonly string CONFIG_FILE = DIR_ROOT + "config.json";
 
 		public static readonly string CRYPT_PASSWORD = "Test123";
